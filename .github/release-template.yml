@@ -1,0 +1,86 @@
+template: |
+  ## Tesla Sipariş Takibi v$RESOLVED_VERSION
+  
+  **Yayınlanma Tarihi:** $RELEASE_DATE
+  
+  ## Yenilikler ve İyileştirmeler
+  
+  $CHANGES
+  
+  ## Nasıl Güncellerim?
+  
+  Uygulama açıldığında otomatik olarak güncelleme kontrolü yapacaktır. Manuel olarak güncellemek için ise, işletim sisteminize uygun olan dosyayı aşağıdan indirin:
+  
+  - Windows: `tesla-tracker_windows_amd64.zip`
+  - macOS (Intel): `tesla-tracker_darwin_amd64.tar.gz`
+  - macOS (Apple Silicon): `tesla-tracker_darwin_arm64.tar.gz`
+  - Linux (x64): `tesla-tracker_linux_amd64.tar.gz`
+  - Linux (ARM64): `tesla-tracker_linux_arm64.tar.gz`
+  
+  ## Doğrulama
+  
+  İndirdiğiniz dosyaların SHA256 özetleri `checksums.txt` dosyasında bulunabilir.
+
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+
+categories:
+  - title: '🚀 Yeni Özellikler'
+    labels:
+      - 'feature'
+      - 'enhancement'
+  - title: '🐛 Hata Düzeltmeleri'
+    labels:
+      - 'fix'
+      - 'bugfix'
+      - 'bug'
+  - title: '🧰 Bakım'
+    labels:
+      - 'chore'
+      - 'dependencies'
+      - 'documentation'
+
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+
+version-resolver:
+  major:
+    labels:
+      - 'major'
+  minor:
+    labels:
+      - 'minor'
+      - 'feature'
+      - 'enhancement'
+  patch:
+    labels:
+      - 'patch'
+      - 'bug'
+      - 'bugfix'
+      - 'fix'
+      - 'chore'
+      - 'dependencies'
+      - 'documentation'
+  default: patch
+
+autolabeler:
+  - label: 'bug'
+    title:
+      - '/fix/i'
+      - '/hata/i'
+  - label: 'feature'
+    title:
+      - '/feature/i'
+      - '/özellik/i'
+      - '/yeni/i'
+  - label: 'chore'
+    title:
+      - '/chore/i'
+      - '/bakım/i'
+  - label: 'documentation'
+    title:
+      - '/docs/i'
+      - '/dokümantasyon/i'
+  - label: 'dependencies'
+    title:
+      - '/dep/i'
+      - '/bağımlılık/i' 

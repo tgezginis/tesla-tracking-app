@@ -1,0 +1,123 @@
+name: Auto-Update Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  packages: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  build-update-binaries:
+    name: Build Update Binaries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc
+
+      - name: Create simple update binary for builds
+        run: |
+          mkdir -p cmd/updater
+          cat > cmd/updater/main.go <<EOF
+          package main
+
+          import (
+            "fmt"
+            "log"
+            "os"
+            "github.com/tgezginis/tesla-tracking-app/pkg/updater"
+            "github.com/tgezginis/tesla-tracking-app/pkg/version"
+          )
+
+          func main() {
+            fmt.Printf("Tesla Tracking App Updater v%s\n", version.String())
+            fmt.Println("Checking for updates...")
+            
+            hasUpdate, release, err := updater.HasUpdate()
+            if err != nil {
+              log.Fatalf("Error checking for updates: %v", err)
+            }
+            
+            if !hasUpdate {
+              fmt.Println("No updates available.")
+              os.Exit(0)
+            }
+            
+            fmt.Printf("Update available: %s\n", release.Version())
+            fmt.Println("Starting update...")
+            
+            err = updater.DoUpdate(release)
+            if err != nil {
+              log.Fatalf("Error updating: %v", err)
+            }
+            
+            fmt.Println("Update successful! Please restart the application.")
+          }
+          EOF
+
+      - name: Build for Linux amd64
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o tesla-tracking-app_linux_amd64 ./cmd/updater
+          chmod +x tesla-tracking-app_linux_amd64
+          tar -czvf tesla-tracking-app_linux_amd64.tar.gz tesla-tracking-app_linux_amd64
+
+      - name: Build for Linux arm64
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o tesla-tracking-app_linux_arm64 ./cmd/updater
+          chmod +x tesla-tracking-app_linux_arm64
+          tar -czvf tesla-tracking-app_linux_arm64.tar.gz tesla-tracking-app_linux_arm64
+
+      - name: Build for Windows amd64
+        run: |
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o tesla-tracking-app_windows_amd64.exe ./cmd/updater
+          zip tesla-tracking-app_windows_amd64.zip tesla-tracking-app_windows_amd64.exe
+
+      - name: Build for macOS amd64
+        run: |
+          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o tesla-tracking-app_darwin_amd64 ./cmd/updater
+          chmod +x tesla-tracking-app_darwin_amd64
+          tar -czvf tesla-tracking-app_darwin_amd64.tar.gz tesla-tracking-app_darwin_amd64
+
+      - name: Build for macOS arm64
+        run: |
+          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o tesla-tracking-app_darwin_arm64 ./cmd/updater
+          chmod +x tesla-tracking-app_darwin_arm64
+          tar -czvf tesla-tracking-app_darwin_arm64.tar.gz tesla-tracking-app_darwin_arm64
+
+      - name: Generate checksums
+        run: |
+          echo "Generating SHA256 checksums"
+          sha256sum tesla-tracking-app_linux_amd64.tar.gz > checksums.txt
+          sha256sum tesla-tracking-app_linux_arm64.tar.gz >> checksums.txt
+          sha256sum tesla-tracking-app_windows_amd64.zip >> checksums.txt
+          sha256sum tesla-tracking-app_darwin_amd64.tar.gz >> checksums.txt
+          sha256sum tesla-tracking-app_darwin_arm64.tar.gz >> checksums.txt
+          cat checksums.txt
+
+      - name: Attach to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            tesla-tracking-app_linux_amd64.tar.gz
+            tesla-tracking-app_linux_arm64.tar.gz
+            tesla-tracking-app_windows_amd64.zip
+            tesla-tracking-app_darwin_amd64.tar.gz
+            tesla-tracking-app_darwin_arm64.tar.gz
+            checksums.txt
+          draft: false
+          prerelease: false
+          generate_release_notes: false 

@@ -1,0 +1,51 @@
+# Go binary, object files, and related files
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+*.o
+*.a
+
+# Dependency directories
+/vendor/
+
+# Build directory
+/build/
+/dist/
+
+# Go workspace file
+go.work
+
+# Tesla token file used for authentication
+*.json
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Fyne specific files
+fyne-cross/
+
+# Build cache
+/.cache/
+
+# Environment files
+.env
+.env.local
